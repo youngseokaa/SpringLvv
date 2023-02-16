@@ -10,10 +10,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class CommentResponses {
-    private Long id;
-    private String title;
-    private String content;
-    private Long userid;
+
     private String Username;
     private String comment;
 

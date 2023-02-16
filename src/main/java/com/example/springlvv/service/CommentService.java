@@ -16,15 +16,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class CommentService {
 
-    final private JwtUtil jwtUtil;
-    final private CommentRepository commentRepository;
-    final private UserRepository userRepository;
-    final private BoardRepository boardRepository;
+    private final JwtUtil jwtUtil;
+    private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
+    private final BoardRepository boardRepository;
 
 
     public CommentResponseDto commentwrite(Long id, CommentRequestDto commentRequestDto, HttpServletRequest request) {
@@ -51,7 +54,7 @@ public class CommentService {
     }
 
 
-    public BoardResponseDto commentrevise(Long id, CommentRequestDto commentRequestDto, HttpServletRequest request) {
+    public CommentResponses commentrevise(Long id, CommentRequestDto commentRequestDto, HttpServletRequest request) {
         String token = jwtUtil.resolveToken(request);
         Claims claims;
         if (token != null) {
@@ -68,14 +71,43 @@ public class CommentService {
             Comment comment = commentRepository.findById(id).orElseThrow(
                     () -> new IllegalArgumentException("댓글이 존재 하지 않습니다")
             );
-                new CommentResponses(user,commentRequestDto);
+            if (Objects.equals(user.getId(), comment.getUser().getId())) {
+                comment.update(commentRequestDto);
+            } else {
+                throw new IllegalArgumentException("사용자가 작성한 댓글만 수정가능합니다");
+            }
+            return new CommentResponses(user, commentRequestDto);
+
 
         }
-        return  new BoardResponseDto();
+        return null;
 //
-//        public Map<String, Object> commentdelete (Long id, HttpServletRequest request){
-//
-//        }
+
+    }
+
+    public Map<String, Object> commentdelete(Long id, HttpServletRequest request) {
+        String token = jwtUtil.resolveToken(request);
+        Claims claims;
+        if (token != null) {
+            if (jwtUtil.validateToken(token)) {
+                claims = jwtUtil.getUserInfoFromToken(token);
+
+            } else {
+                throw new IllegalArgumentException("token Error");
+            }
+            User user = userRepository.findByUsername(claims.getSubject()).orElseThrow(
+                    () -> new IllegalArgumentException("사용자가 존재하지 않습니다.")
+            );
+            Comment comment = commentRepository.findById(id).orElseThrow(
+                    () -> new IllegalArgumentException("댓글이 존재 하지 않습니다")
+            );
+            if (Objects.equals(user.getId(), comment.getUser().getId())) {
+                commentRepository.delete(comment);
+            }
+        }
+        Map<String,Object> subject = new HashMap<>();
+        subject.put("Success","true");
+        return subject;
     }
 }
 

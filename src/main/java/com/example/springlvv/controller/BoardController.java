@@ -1,5 +1,6 @@
 package com.example.springlvv.controller;
 
+import com.example.springlvv.dto.BoardDto;
 import com.example.springlvv.dto.BoardRequestDto;
 import com.example.springlvv.dto.BoardResponseDto;
 import com.example.springlvv.service.BoardService;
@@ -23,7 +24,7 @@ public class BoardController {
     }
 
     @GetMapping("/read")
-    public List<BoardResponseDto> Boardinquire() {
+    public List<BoardDto> Boardinquire() {
         return boardService.boardinquire();
     }
 

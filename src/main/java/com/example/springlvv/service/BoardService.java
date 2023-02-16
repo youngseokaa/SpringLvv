@@ -1,5 +1,6 @@
 package com.example.springlvv.service;
 
+import com.example.springlvv.dto.BoardDto;
 import com.example.springlvv.dto.BoardRequestDto;
 import com.example.springlvv.dto.BoardResponseDto;
 import com.example.springlvv.dto.SignupRequestDto;
@@ -24,10 +25,10 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class BoardService {
-    final private BoardRepository boardRepository;
-    final private JwtUtil jwtUtil;
-    final private UserRepository userRepository;
-    final private CommentRepository commentRepository;
+    private final BoardRepository boardRepository;
+    private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
     private static final String ADMIN_TOKEN = "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC";
 
     @Transactional
@@ -43,29 +44,28 @@ public class BoardService {
                 throw new IllegalArgumentException("token Error");
             }
             User user = userRepository.findByUsername(claims.getSubject()).orElseThrow(
-                    () -> new IllegalArgumentException("사용자가 존재하지 않습니다.")
+                    () -> new IllegalArgumentException("사용자가 존재하지 않습니다")
             );
+
             // 요청받은 DTO 로 DB에 저장할 객체 만들기
-            Board board = boardRepository.saveAndFlush(new Board(boardRequestDto, user.getId()));
+            Board board = boardRepository.saveAndFlush(new Board(boardRequestDto, user.getId(),user));
 
 
-            return new BoardResponseDto(board, user);
+            return new BoardResponseDto(board);
         } else {
             return null;
         }
     }
 
     @Transactional
-    public List<BoardResponseDto> boardinquire() {
-        List<BoardResponseDto> boardResponseDtos = new ArrayList<>();
-
+    public List<BoardDto> boardinquire() {
+        List<BoardDto> boarddto = new ArrayList<>();
         List<Board> board = boardRepository.findAllBy();
-        for (int i = 0; i < board.size(); i++) {
-            Optional<User> user = userRepository.findById(board.get(i).getUserid());
-            boardResponseDtos.add(new BoardResponseDto(board.get(i), user.get()));
+        for (Board value : board) {
+            boarddto.add(new BoardDto(value));
         }
 
-        return boardResponseDtos;
+        return boarddto;
     }
 
     @Transactional
@@ -90,7 +90,7 @@ public class BoardService {
                 );
                 board.update(boardRequestDto);
 
-                return new BoardResponseDto(board, user);
+                return new BoardResponseDto(board);
             }
 
             Board board = boardRepository.findByIdAndUserid(id, user.getId()).orElseThrow(
@@ -101,7 +101,7 @@ public class BoardService {
             board.update(boardRequestDto);
 
 
-            return new BoardResponseDto(board, user);
+            return new BoardResponseDto(board);
         } else {
             return null;
         }
@@ -133,7 +133,6 @@ public class BoardService {
             );
 
         }
-        boardRepository.deleteById(id);
         Map<String,Object> subject = new HashMap<>();
         subject.put("Success","true");
         return subject;

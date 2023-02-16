@@ -31,4 +31,8 @@ public class Comment {
         this.board = board;
         this.user = user;
     }
+
+    public void update(CommentRequestDto commentRequestDto) {
+
+    }
 }

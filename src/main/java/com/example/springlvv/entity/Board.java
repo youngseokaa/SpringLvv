@@ -29,10 +29,21 @@ public class Board extends Timestamped{
     @OneToMany(mappedBy = "board")
     private List<Comment> comments = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn
+    private User user;
+
     public Board(BoardRequestDto boardRequestDto, Long userId){
         this.title = boardRequestDto.getTitle();
         this.content = boardRequestDto.getContent();
         this.userid = userId;
+    }
+
+    public Board(BoardRequestDto boardRequestDto, Long userId, User user){
+        this.title = boardRequestDto.getTitle();
+        this.content = boardRequestDto.getContent();
+        this.userid = userId;
+        this.user = user;
     }
 
     public void update(BoardRequestDto boardRequestDto) {
